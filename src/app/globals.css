@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #08090f;
+  --foreground: #f8f8fa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(96, 165, 250, 0.1), transparent 32%),
+    radial-gradient(circle at bottom, rgba(148, 163, 184, 0.06), transparent 36%),
+    linear-gradient(180deg, #090a11 0%, #05060b 100%);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+.soft-panel {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(7, 10, 16, 0.72);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px) saturate(128%);
+}
+
+.editor-grid {
+  background-color: rgba(255, 255, 255, 0.018);
+  background-image:
+    linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.008) 25%,
+      transparent 25%,
+      transparent 75%,
+      rgba(255, 255, 255, 0.008) 75%,
+      rgba(255, 255, 255, 0.008)
+    ),
+    linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.008) 25%,
+      transparent 25%,
+      transparent 75%,
+      rgba(255, 255, 255, 0.008) 75%,
+      rgba(255, 255, 255, 0.008)
+    );
+  background-position: 0 0, 32px 32px;
+  background-size: 64px 64px;
+}
+
+.image-layer {
+  touch-action: none;
+}
+
+.lasso-outline {
+  stroke-dasharray: 8 6;
+}
+
+.layer-slider {
+  accent-color: rgba(186, 230, 253, 0.98);
+}
