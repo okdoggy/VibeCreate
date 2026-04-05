@@ -31,7 +31,7 @@ type ImageEditorLayersPopoverProps = {
   onSetLayerVisibility: (layerId: string, visible: boolean) => void;
   onSetOpenLayerMenuId: (layerId: string | null) => void;
   onSetSelectedLayerId: (layerId: string) => void;
-  onShowTransientLabel: (message: string) => void;
+  onTriggerLayerFeedback: (actionLabel: string) => void;
   onToggleLayerOpacityPanel: (layerId: string) => void;
 };
 
@@ -55,7 +55,7 @@ export function ImageEditorLayersPopover({
   onSetLayerVisibility,
   onSetOpenLayerMenuId,
   onSetSelectedLayerId,
-  onShowTransientLabel,
+  onTriggerLayerFeedback,
   onToggleLayerOpacityPanel,
 }: ImageEditorLayersPopoverProps) {
   return (
@@ -175,7 +175,7 @@ export function ImageEditorLayersPopover({
                             type="button"
                             onClick={() => {
                               onSetOpenLayerMenuId(null);
-                              onShowTransientLabel(`${label} 준비중`);
+                              onTriggerLayerFeedback(label);
                             }}
                           >
                             {label}

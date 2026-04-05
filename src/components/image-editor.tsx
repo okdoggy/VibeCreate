@@ -13,6 +13,10 @@ import {
 import { CANVA_THEME_STYLE } from "@/components/image-editor-theme";
 import { ImageEditorCanvas } from "@/components/image-editor-canvas";
 import { ImageEditorEmptyState } from "@/components/image-editor-empty-state";
+import {
+  FEEDBACK_CATEGORIES,
+  ImageEditorFeedback,
+} from "@/components/image-editor-feedback";
 import { ImageEditorLayersPopover } from "@/components/image-editor-layers-popover";
 import type {
   ActiveInteraction,
@@ -220,6 +224,7 @@ export function ImageEditor() {
   const lassoDraftRef = useRef<LassoDraft | null>(null);
   const interactionTargetRef = useRef<HTMLElement | null>(null);
   const transientLabelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const feedbackPromptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingLayerPatchesRef = useRef<Record<string, Partial<ImageLayer>>>({});
   const animationFrameRef = useRef<number | null>(null);
   const interactionStartSnapshotRef = useRef<DocumentSnapshot | null>(null);
@@ -239,6 +244,12 @@ export function ImageEditor() {
   const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null);
   const [dragOverLayerId, setDragOverLayerId] = useState<string | null>(null);
   const [transientLabel, setTransientLabel] = useState<string | null>(null);
+  const [feedbackPromptAction, setFeedbackPromptAction] = useState<string | null>(null);
+  const [feedbackModalAction, setFeedbackModalAction] = useState<string | null>(null);
+  const [feedbackCategory, setFeedbackCategory] = useState("");
+  const [feedbackDetails, setFeedbackDetails] = useState("");
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [hoveredResizeHandle, setHoveredResizeHandle] = useState<{
     handle: ResizeHandle;
     layerId: string;
@@ -582,6 +593,10 @@ export function ImageEditor() {
         clearTimeout(transientLabelTimerRef.current);
       }
 
+      if (feedbackPromptTimerRef.current) {
+        clearTimeout(feedbackPromptTimerRef.current);
+      }
+
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -761,6 +776,127 @@ export function ImageEditor() {
   const openFilePicker = () => {
     fileInputRef.current?.click();
   };
+
+  const dismissFeedbackPrompt = useCallback(() => {
+    if (feedbackPromptTimerRef.current) {
+      clearTimeout(feedbackPromptTimerRef.current);
+      feedbackPromptTimerRef.current = null;
+    }
+
+    setFeedbackPromptAction(null);
+  }, []);
+
+  const openFeedbackPrompt = useCallback(
+    (actionLabel: string) => {
+      dismissFeedbackPrompt();
+      setFeedbackPromptAction(actionLabel);
+      feedbackPromptTimerRef.current = setTimeout(() => {
+        setFeedbackPromptAction(null);
+      }, 10000);
+    },
+    [dismissFeedbackPrompt],
+  );
+
+  const resetFeedbackModal = useCallback(() => {
+    setFeedbackModalAction(null);
+    setFeedbackCategory("");
+    setFeedbackDetails("");
+    setFeedbackError(null);
+    setIsSubmittingFeedback(false);
+  }, []);
+
+  const handleLayerActionFeedback = useCallback(
+    (actionLabel: string) => {
+      showTransientLabel(`${actionLabel} 준비중`);
+      openFeedbackPrompt(actionLabel);
+    },
+    [openFeedbackPrompt, showTransientLabel],
+  );
+
+  const handlePositiveFeedback = useCallback(() => {
+    dismissFeedbackPrompt();
+    showTransientLabel("감사합니다.");
+  }, [dismissFeedbackPrompt, showTransientLabel]);
+
+  const handleNegativeFeedback = useCallback(() => {
+    if (!feedbackPromptAction) {
+      return;
+    }
+
+    dismissFeedbackPrompt();
+    setFeedbackModalAction(feedbackPromptAction);
+    setFeedbackCategory("");
+    setFeedbackDetails("");
+    setFeedbackError(null);
+  }, [dismissFeedbackPrompt, feedbackPromptAction]);
+
+  const closeFeedbackModal = useCallback(() => {
+    if (isSubmittingFeedback) {
+      return;
+    }
+
+    resetFeedbackModal();
+  }, [isSubmittingFeedback, resetFeedbackModal]);
+
+  const handleSubmitFeedback = useCallback(async () => {
+    const selectedCategoryLabel = FEEDBACK_CATEGORIES.find(
+      (category) => category.value === feedbackCategory,
+    )?.label;
+
+    if (!feedbackModalAction || !selectedCategoryLabel || !feedbackDetails.trim()) {
+      return;
+    }
+
+    setIsSubmittingFeedback(true);
+    setFeedbackError(null);
+
+    try {
+      const selectedLayerName =
+        layers.find((layer) => layer.id === selectedLayerId)?.name ?? null;
+
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: feedbackModalAction,
+          category: selectedCategoryLabel,
+          details: feedbackDetails.trim(),
+          selectedLayerName,
+          pageUrl: window.location.href,
+          userAgent: navigator.userAgent,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "피드백 전송에 실패했어요.");
+      }
+
+      resetFeedbackModal();
+      showTransientLabel("제보 감사합니다.");
+    } catch (error) {
+      setFeedbackError(
+        error instanceof Error
+          ? error.message
+          : "피드백을 보내는 중 문제가 발생했어요.",
+      );
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  }, [
+    feedbackCategory,
+    feedbackDetails,
+    feedbackModalAction,
+    layers,
+    resetFeedbackModal,
+    selectedLayerId,
+    showTransientLabel,
+  ]);
 
   const handleFilesReady = useCallback(
     async (files: File[]) => {
@@ -1518,7 +1654,7 @@ export function ImageEditor() {
                 onSetLayerVisibility={setLayerVisibility}
                 onSetOpenLayerMenuId={setOpenLayerMenuId}
                 onSetSelectedLayerId={setSelectedLayerId}
-                onShowTransientLabel={showTransientLabel}
+                onTriggerLayerFeedback={handleLayerActionFeedback}
                 onToggleLayerOpacityPanel={toggleLayerOpacityPanel}
               />
             ) : null}
@@ -1533,6 +1669,22 @@ export function ImageEditor() {
           </div>
         </div>
       ) : null}
+
+      <ImageEditorFeedback
+        details={feedbackDetails}
+        errorMessage={feedbackError}
+        isSubmitting={isSubmittingFeedback}
+        modalActionLabel={feedbackModalAction}
+        promptActionLabel={feedbackPromptAction}
+        selectedCategory={feedbackCategory}
+        onCategoryChange={setFeedbackCategory}
+        onCloseModal={closeFeedbackModal}
+        onDetailsChange={setFeedbackDetails}
+        onDislike={handleNegativeFeedback}
+        onDismissPrompt={dismissFeedbackPrompt}
+        onLike={handlePositiveFeedback}
+        onSubmit={handleSubmitFeedback}
+      />
 
       <main className="relative flex flex-1 overflow-hidden pt-20">
         <section
