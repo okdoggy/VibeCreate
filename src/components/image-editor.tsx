@@ -1,25 +1,35 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-
 import {
   ArrowClockwise,
   ArrowCounterClockwise,
-  CaretDown,
   Cursor,
-  Eye,
-  EyeSlash,
   FolderSimplePlus,
   Lasso,
   MagnifyingGlassMinus,
   MagnifyingGlassPlus,
-  Rows,
   Stack,
 } from "@phosphor-icons/react";
 import { CANVA_THEME_STYLE } from "@/components/image-editor-theme";
+import { ImageEditorCanvas } from "@/components/image-editor-canvas";
+import { ImageEditorEmptyState } from "@/components/image-editor-empty-state";
+import { ImageEditorLayersPopover } from "@/components/image-editor-layers-popover";
+import type {
+  ActiveInteraction,
+  Bounds,
+  DocumentSnapshot,
+  DragState,
+  HistoryState,
+  ImageLayer,
+  LassoDraft,
+  LassoSelection,
+  Point,
+  ResizeHandle,
+  ResizeState,
+  Tool,
+} from "@/components/image-editor-types";
 import {
   type ChangeEvent,
-  type DragEvent as ReactDragEvent,
   type PointerEvent as ReactPointerEvent,
   type WheelEvent,
   useCallback,
@@ -28,99 +38,6 @@ import {
   useRef,
   useState,
 } from "react";
-
-type Tool = "pointer" | "lasso";
-
-type Point = {
-  x: number;
-  y: number;
-};
-
-type Bounds = {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-};
-
-type LassoSelection = {
-  layerId: string;
-  points: Point[];
-  closed: boolean;
-  bounds: Bounds;
-};
-
-type LassoDraft = {
-  layerId: string;
-  pointerId: number;
-  points: Point[];
-};
-
-type ImageLayer = {
-  id: string;
-  name: string;
-  src: string;
-  width: number;
-  height: number;
-  visible: boolean;
-  x: number;
-  y: number;
-  opacity: number;
-};
-
-type ResizeHandle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
-
-type DragState = {
-  layerId: string;
-  pointerId: number;
-  startX: number;
-  startY: number;
-  originX: number;
-  originY: number;
-  lastClientX: number;
-  lastClientY: number;
-  lastTimestamp: number;
-  velocityX: number;
-  velocityY: number;
-};
-
-type ResizeState = {
-  layerId: string;
-  pointerId: number;
-  handle: ResizeHandle;
-  startX: number;
-  startY: number;
-  originX: number;
-  originY: number;
-  originWidth: number;
-  originHeight: number;
-  lastClientX: number;
-  lastClientY: number;
-  lastTimestamp: number;
-  velocityX: number;
-  velocityY: number;
-};
-
-type ActiveInteraction =
-  | {
-      layerId: string;
-      mode: "drag";
-    }
-  | {
-      handle: ResizeHandle;
-      layerId: string;
-      mode: "resize";
-    };
-
-type DocumentSnapshot = {
-  layers: ImageLayer[];
-  selectedLayerId: string | null;
-};
-
-type HistoryState = {
-  past: DocumentSnapshot[];
-  future: DocumentSnapshot[];
-};
 
 const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 4;
@@ -142,23 +59,6 @@ const clamp = (value: number, min: number, max: number) =>
 const getDisplayLayerName = (name: string) => {
   const compactName = name.replace(/\.[^.]+$/, "");
   return compactName || name;
-};
-
-const getHandleCursor = (handle: ResizeHandle) => {
-  switch (handle) {
-    case "n":
-    case "s":
-      return "ns-resize";
-    case "e":
-    case "w":
-      return "ew-resize";
-    case "ne":
-    case "sw":
-      return "nesw-resize";
-    case "nw":
-    case "se":
-      return "nwse-resize";
-  }
 };
 
 const clampMomentum = (value: number, zoom: number) =>
@@ -1598,247 +1498,30 @@ export function ImageEditor() {
             </button>
 
             {isLayersOpen ? (
-              <div
-                ref={layersPopoverRef}
-                className="soft-panel absolute right-0 top-[calc(100%+10px)] z-40 w-[344px] overflow-visible rounded-[18px] p-2"
-                role="dialog"
-                aria-label="레이어 패널"
-              >
-                  <div className="mb-2 flex items-center justify-between px-2 pt-1">
-                    <div>
-                      <p className="text-[11px] font-semibold tracking-[0.22em] text-[color:var(--text-faint)] uppercase">
-                        Layers
-                      </p>
-                      <h2 className="mt-1 text-[15px] font-semibold text-[color:var(--text-primary)]">
-                        {layers.length === 0
-                          ? "레이어 없음"
-                          : `${layers.length} ${layers.length === 1 ? "layer" : "layers"}`}
-                      </h2>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    {displayLayers.length === 0 ? (
-                      <div className="theme-empty-layer-state rounded-2xl border border-dashed px-4 py-8 text-center text-[13px] leading-6">
-                        아직 레이어가 없어요. 중앙 캔버스에서 이미지를 올리면 여기서 바로 관리할 수 있어요.
-                      </div>
-                    ) : (
-                      displayLayers.map((layer) => {
-                        const displayLayerName = getDisplayLayerName(layer.name);
-                        const isSelected = layer.id === selectedLayerId;
-                        const isExpanded = layer.id === expandedLayerId;
-                        const isDragTarget =
-                          dragOverLayerId === layer.id && draggedLayerId !== layer.id;
-                        const opacityPercent = Math.round(layer.opacity * 100);
-
-                        return (
-                          <div
-                            key={layer.id}
-                            className="relative space-y-1"
-                            onDragEnter={() => setDragOverLayerId(layer.id)}
-                            onDragOver={(event) => {
-                              event.preventDefault();
-                              setDragOverLayerId(layer.id);
-                            }}
-                            onDrop={(event) => {
-                              event.preventDefault();
-
-                              const sourceLayerId =
-                                draggedLayerId ?? event.dataTransfer.getData("text/plain");
-
-                              if (sourceLayerId) {
-                                reorderLayers(sourceLayerId, layer.id);
-                              }
-
-                              setDraggedLayerId(null);
-                              setDragOverLayerId(null);
-                            }}
-                          >
-                            <div
-                              draggable
-                              className={[
-                                "theme-layer-row group relative flex items-center gap-2 border px-2 py-2 transition-all duration-150",
-                                isSelected ? "is-selected" : "",
-                                isDragTarget ? "is-drag-target" : "",
-                                draggedLayerId === layer.id ? "opacity-45" : "",
-                              ].join(" ")}
-                              onDragEnd={() => {
-                                setDraggedLayerId(null);
-                                setDragOverLayerId(null);
-                              }}
-                              onDragStart={(event: ReactDragEvent<HTMLDivElement>) => {
-                                event.dataTransfer.effectAllowed = "move";
-                                event.dataTransfer.setData("text/plain", layer.id);
-                                setDraggedLayerId(layer.id);
-                                setSelectedLayerId(layer.id);
-                                setOpenLayerMenuId(null);
-                              }}
-                            >
-                              <span
-                                className={`theme-layer-rail absolute bottom-2 left-0.5 top-2 w-1 rounded-full transition ${
-                                  isSelected ? "is-visible" : ""
-                                }`}
-                              />
-
-                              <div className="relative shrink-0">
-                                <button
-                                  aria-expanded={openLayerMenuId === layer.id}
-                                  aria-haspopup="menu"
-                                  aria-label={`${displayLayerName} 레이어 메뉴`}
-                                  className="theme-layer-menu-button flex h-10 w-10 items-center justify-center border transition"
-                                  data-layer-menu-trigger="true"
-                                  type="button"
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    setSelectedLayerId(layer.id);
-                                    setOpenLayerMenuId((currentLayerId) =>
-                                      currentLayerId === layer.id ? null : layer.id,
-                                    );
-                                  }}
-                                >
-                                  <Rows size={15} weight="bold" />
-                                </button>
-
-                                {openLayerMenuId === layer.id ? (
-                                  <div
-                                    className="soft-panel absolute right-[calc(100%+0.45rem)] top-1/2 z-30 min-w-[136px] -translate-y-1/2 rounded-[14px] p-1.5"
-                                    data-layer-menu="true"
-                                    role="menu"
-                                  >
-                                    {["배경 제거", "배경 추출"].map((label) => (
-                                      <button
-                                        key={label}
-                                        className="theme-layer-menu-item flex h-9 w-full items-center rounded-[10px] px-3 text-left text-[12px] font-medium transition"
-                                        role="menuitem"
-                                        type="button"
-                                        onClick={() => {
-                                          setOpenLayerMenuId(null);
-                                          showTransientLabel(`${label} 준비중`);
-                                        }}
-                                      >
-                                        {label}
-                                      </button>
-                                    ))}
-                                  </div>
-                                ) : null}
-                              </div>
-
-                              <button
-                                className="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left"
-                                title={layer.name}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedLayerId(layer.id);
-                                  setOpenLayerMenuId(null);
-                                }}
-                              >
-                                <div
-                                  className={`theme-layer-thumbnail relative flex h-11 w-11 items-center justify-center overflow-hidden border ${
-                                    isSelected ? "is-selected" : ""
-                                  }`}
-                                >
-                                  <img
-                                    alt={layer.name}
-                                    className="max-h-full max-w-full object-contain"
-                                    src={layer.src}
-                                    style={{ opacity: layer.opacity * 0.96 }}
-                                  />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <p
-                                      className={`truncate text-[13px] font-semibold ${
-                                        isSelected
-                                          ? "text-[color:var(--text-primary)]"
-                                          : "text-[color:var(--text-secondary)]"
-                                      }`}
-                                    >
-                                      {displayLayerName}
-                                    </p>
-                                    {isSelected ? (
-                                      <span className="theme-selected-badge rounded-full border px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.12em] uppercase">
-                                        Selected
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                  <p className="mt-1 truncate text-[11px] text-[color:var(--text-muted)]">
-                                    Opacity {opacityPercent}%
-                                  </p>
-                                </div>
-                              </button>
-
-                              <div className="flex items-center gap-1.5">
-                                <button
-                                  aria-label={isExpanded ? "투명도 패널 닫기" : "투명도 패널 열기"}
-                                  className="theme-secondary-button flex h-9 min-w-[58px] items-center justify-center gap-1 border px-2 text-[11px] font-semibold transition"
-                                  type="button"
-                                  onClick={() => toggleLayerOpacityPanel(layer.id)}
-                                >
-                                  <span>{opacityPercent}%</span>
-                                  <CaretDown
-                                    size={11}
-                                    className={`transition-transform duration-150 ${
-                                      isExpanded ? "rotate-180" : ""
-                                    }`}
-                                    weight="bold"
-                                  />
-                                </button>
-
-                                <button
-                                  aria-label={layer.visible ? "레이어 숨기기" : "레이어 보이기"}
-                                  className="theme-secondary-button flex h-10 w-10 items-center justify-center border transition"
-                                  type="button"
-                                  onClick={() => setLayerVisibility(layer.id, !layer.visible)}
-                                >
-                                  {layer.visible ? (
-                                    <Eye size={15} weight="regular" />
-                                  ) : (
-                                    <EyeSlash size={15} weight="regular" />
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-
-                            {isExpanded ? (
-                              <div className="theme-range-panel ml-8 rounded-2xl border px-4 py-3">
-                                <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--text-faint)]">
-                                  <span>Opacity</span>
-                                  <span className="text-[color:var(--text-secondary)]">{opacityPercent}%</span>
-                                </div>
-                                <input
-                                  aria-label={`${layer.name} 투명도 조절`}
-                                  className="layer-slider h-2 w-full cursor-pointer appearance-none rounded-full bg-[var(--slider-track)]"
-                                  max={100}
-                                  min={0}
-                                  step={1}
-                                  type="range"
-                                  value={opacityPercent}
-                                  onBlur={finalizeOpacityHistory}
-                                  onChange={(event) =>
-                                    setLayerOpacity(layer.id, Number(event.target.value) / 100)
-                                  }
-                                  onFocus={() => {
-                                    if (!opacitySnapshotRef.current) {
-                                      opacitySnapshotRef.current = getCurrentDocumentSnapshot();
-                                    }
-                                  }}
-                                  onPointerDown={() => {
-                                    if (!opacitySnapshotRef.current) {
-                                      opacitySnapshotRef.current = getCurrentDocumentSnapshot();
-                                    }
-                                  }}
-                                  onPointerUp={finalizeOpacityHistory}
-                                />
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              ) : null}
+              <ImageEditorLayersPopover
+                displayLayers={displayLayers}
+                draggedLayerId={draggedLayerId}
+                dragOverLayerId={dragOverLayerId}
+                expandedLayerId={expandedLayerId}
+                getCurrentDocumentSnapshot={getCurrentDocumentSnapshot}
+                getDisplayLayerName={getDisplayLayerName}
+                layers={layers}
+                layersPopoverRef={layersPopoverRef}
+                openLayerMenuId={openLayerMenuId}
+                opacitySnapshotRef={opacitySnapshotRef}
+                selectedLayerId={selectedLayerId}
+                onFinalizeOpacityHistory={finalizeOpacityHistory}
+                onReorderLayers={reorderLayers}
+                onSetDragOverLayerId={setDragOverLayerId}
+                onSetDraggedLayerId={setDraggedLayerId}
+                onSetLayerOpacity={setLayerOpacity}
+                onSetLayerVisibility={setLayerVisibility}
+                onSetOpenLayerMenuId={setOpenLayerMenuId}
+                onSetSelectedLayerId={setSelectedLayerId}
+                onShowTransientLabel={showTransientLabel}
+                onToggleLayerOpacityPanel={toggleLayerOpacityPanel}
+              />
+            ) : null}
           </div>
         </div>
       </header>
@@ -1886,322 +1569,32 @@ export function ImageEditor() {
           />
 
           {layers.length === 0 ? (
-            <div className="pointer-events-auto relative z-10 w-full max-w-[520px]">
-              <div
-                className={`soft-panel theme-empty-card rounded-[28px] px-8 py-10 text-center transition-all duration-200 ${
-                  isCanvasDropTarget ? "is-drop-target" : ""
-                }`}
-              >
-                <div className="theme-empty-icon mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border">
-                  <FolderSimplePlus size={24} weight="duotone" />
-                </div>
-                <h1 className="mt-5 text-[28px] font-semibold tracking-[-0.03em] text-[color:var(--text-primary)]">
-                  이미지를 불러와 시작하세요
-                </h1>
-                <p className="mx-auto mt-3 max-w-[360px] text-[15px] leading-7 text-[color:var(--text-muted)]">
-                  드래그 앤 드롭 또는 파일 선택으로 레이어를 추가하고, 바로 이동·선택·리사이즈를 시작할 수 있어요.
-                </p>
-                <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <button
-                    className="theme-empty-primary-button flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-2xl border px-5 text-[14px] font-semibold transition"
-                    type="button"
-                    onClick={openFilePicker}
-                  >
-                    <FolderSimplePlus size={18} weight="duotone" />
-                    이미지 불러오기
-                  </button>
-                </div>
-                <div className="theme-tip mt-6 rounded-2xl border px-4 py-3 text-[12px] leading-6">
-                  팁: 이미지를 올린 뒤엔 <span className="text-[color:var(--text-secondary)]">Undo / Redo</span>, <span className="text-[color:var(--text-secondary)]">줌 - / +</span>, <span className="text-[color:var(--text-secondary)]">100%</span>으로 바로 작업 흐름을 제어할 수 있어요.
-                </div>
-              </div>
-            </div>
+            <ImageEditorEmptyState
+              isCanvasDropTarget={isCanvasDropTarget}
+              onOpenFilePicker={openFilePicker}
+            />
           ) : (
-            <div
-              className={[
-                "pointer-events-none absolute inset-0 flex items-center justify-center",
-                activeTool === "lasso" ? "cursor-crosshair" : "cursor-default",
-              ].join(" ")}
-            >
-              <div
-                className="relative h-[min(78vh,920px)] w-[min(88vw,1320px)]"
-                style={{
-                  transform: `scale(${zoom})`,
-                  transformOrigin: "center center",
-                }}
-              >
-                {layers.map((layer, index) => {
-                  const isSelected = layer.id === selectedLayerId;
-                  const isDragging =
-                    activeInteraction?.mode === "drag" &&
-                    activeInteraction.layerId === layer.id;
-                  const isResizing =
-                    activeInteraction?.mode === "resize" &&
-                    activeInteraction.layerId === layer.id;
-                  const isManipulating = isDragging || isResizing;
-                  const draftForLayer =
-                    lassoDraft?.layerId === layer.id ? lassoDraft.points : null;
-                  const selectionForLayer = lassoSelections[layer.id];
-
-                  if (!layer.visible) {
-                    return null;
-                  }
-
-                  return (
-                    <button
-                      key={layer.id}
-                      data-layer-wrapper="true"
-                      aria-label={`${layer.name} 레이어 선택`}
-                      className={[
-                        "image-layer pointer-events-auto absolute left-1/2 top-1/2 border-0 bg-transparent p-0",
-                        isManipulating
-                          ? "transition-none"
-                          : "transition-[transform,width,height,box-shadow,border-color] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                        activeTool === "pointer"
-                          ? "cursor-grab active:cursor-grabbing"
-                          : "cursor-crosshair",
-                      ].join(" ")}
-                      style={{
-                        cursor:
-                          activeTool === "lasso"
-                            ? "crosshair"
-                            : activeInteraction?.mode === "resize" &&
-                                activeInteraction.layerId === layer.id
-                              ? getHandleCursor(activeInteraction.handle)
-                              : hoveredResizeHandle?.layerId === layer.id
-                                ? getHandleCursor(hoveredResizeHandle.handle)
-                                : isDragging
-                                  ? "grabbing"
-                                  : "grab",
-                        height: `${layer.height}px`,
-                        transform: `translate3d(-50%, -50%, 0) translate3d(${layer.x}px, ${layer.y}px, 0)`,
-                        width: `${layer.width}px`,
-                        willChange: isManipulating ? "transform, width, height" : "auto",
-                        zIndex: isSelected ? layers.length + 8 : index + 1,
-                      }}
-                      type="button"
-                      onPointerCancel={(event) => handleLayerPointerCancel(event, layer)}
-                      onPointerLeave={() => {
-                        if (!dragStateRef.current && !resizeStateRef.current) {
-                          setHoveredResizeHandle(null);
-                        }
-                      }}
-                      onPointerDown={(event) => handleLayerPointerDown(event, layer)}
-                      onPointerMove={(event) => handleLayerPointerMove(event, layer)}
-                      onPointerUp={(event) => handleLayerPointerUp(event, layer)}
-                    >
-                      <span
-                        className={[
-                          "theme-selected-outline pointer-events-none absolute inset-0 border transition duration-150",
-                          isSelected ? "is-selected" : "",
-                        ].join(" ")}
-                      />
-
-                      <div className="relative h-full w-full overflow-hidden">
-                        <img
-                          alt={layer.name}
-                          className="block h-full w-full select-none object-fill"
-                          draggable={false}
-                          src={layer.src}
-                          style={{ opacity: layer.opacity }}
-                        />
-
-                        {(draftForLayer || selectionForLayer) && (
-                          <LayerSelectionOverlay
-                            draftPoints={draftForLayer}
-                            height={layer.height}
-                            layerId={layer.id}
-                            selection={selectionForLayer}
-                            width={layer.width}
-                          />
-                        )}
-                      </div>
-
-                      {activeTool === "pointer" && isSelected ? (
-                        <ResizeHandles
-                          layer={layer}
-                          onHandlePointerDown={handleResizePointerDown}
-                        />
-                      ) : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <ImageEditorCanvas
+              activeInteraction={activeInteraction}
+              activeTool={activeTool}
+              dragStateRef={dragStateRef}
+              hoveredResizeHandle={hoveredResizeHandle}
+              lassoDraft={lassoDraft}
+              lassoSelections={lassoSelections}
+              layers={layers}
+              resizeStateRef={resizeStateRef}
+              selectedLayerId={selectedLayerId}
+              zoom={zoom}
+              onClearHoveredResizeHandle={() => setHoveredResizeHandle(null)}
+              onHandlePointerDown={handleResizePointerDown}
+              onLayerPointerCancel={handleLayerPointerCancel}
+              onLayerPointerDown={handleLayerPointerDown}
+              onLayerPointerMove={handleLayerPointerMove}
+              onLayerPointerUp={handleLayerPointerUp}
+            />
           )}
         </section>
       </main>
     </div>
-  );
-}
-
-type ResizeHandlesProps = {
-  layer: ImageLayer;
-  onHandlePointerDown: (
-    event: ReactPointerEvent<HTMLElement>,
-    layer: ImageLayer,
-    handle: ResizeHandle,
-  ) => void;
-};
-
-function ResizeHandles({ layer, onHandlePointerDown }: ResizeHandlesProps) {
-  const handles: Array<{
-    className: string;
-    handle: ResizeHandle;
-    indicatorClassName: string;
-  }> = [
-    {
-      className: "left-5 right-5 -top-4 h-8",
-      handle: "n",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-px w-10 -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-    {
-      className: "left-5 right-5 -bottom-4 h-8",
-      handle: "s",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-px w-10 -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-    {
-      className: "top-5 bottom-5 -left-4 w-8",
-      handle: "w",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-10 w-px -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-    {
-      className: "top-5 bottom-5 -right-4 w-8",
-      handle: "e",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-10 w-px -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-    {
-      className: "-left-4 -top-4 h-8 w-8",
-      handle: "nw",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-    {
-      className: "-right-4 -top-4 h-8 w-8",
-      handle: "ne",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-    {
-      className: "-left-4 -bottom-4 h-8 w-8",
-      handle: "sw",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-    {
-      className: "-right-4 -bottom-4 h-8 w-8",
-      handle: "se",
-      indicatorClassName:
-        "left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full",
-    },
-  ];
-
-  return (
-    <>
-      {handles.map(({ className, handle, indicatorClassName }) => (
-        <span
-          key={`${layer.id}-${handle}`}
-          className={`absolute ${className} z-20 pointer-events-auto`}
-          data-resize-handle={handle}
-          style={{ cursor: getHandleCursor(handle) }}
-          onPointerDown={(event) => onHandlePointerDown(event, layer, handle)}
-        >
-          <span
-            className={`absolute ${indicatorClassName} transition-opacity duration-150`}
-            style={{
-              background: "var(--handle-fill)",
-              boxShadow: "var(--handle-shadow)",
-            }}
-          />
-        </span>
-      ))}
-    </>
-  );
-}
-
-type LayerSelectionOverlayProps = {
-  layerId: string;
-  width: number;
-  height: number;
-  selection?: LassoSelection;
-  draftPoints?: Point[] | null;
-};
-
-function LayerSelectionOverlay({
-  draftPoints,
-  height,
-  layerId,
-  selection,
-  width,
-}: LayerSelectionOverlayProps) {
-  const activePoints = draftPoints ?? selection?.points ?? [];
-
-  if (activePoints.length === 0) {
-    return null;
-  }
-
-  const polygonPoints = activePoints.map((point) => `${point.x},${point.y}`).join(" ");
-  const maskId = `lasso-mask-${layerId}`;
-  const hasClosedSelection = !draftPoints && Boolean(selection?.closed);
-
-  return (
-    <svg
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      viewBox={`0 0 ${width} ${height}`}
-    >
-      <defs>
-        <mask id={maskId}>
-          <rect fill="white" height={height} width={width} x={0} y={0} />
-          {hasClosedSelection ? <polygon fill="black" points={polygonPoints} /> : null}
-        </mask>
-      </defs>
-
-      {hasClosedSelection ? (
-        <rect
-          fill="var(--selection-mask)"
-          height={height}
-          mask={`url(#${maskId})`}
-          width={width}
-          x={0}
-          y={0}
-        />
-      ) : null}
-
-      {hasClosedSelection ? (
-        <polygon
-          fill="var(--selection-fill)"
-          points={polygonPoints}
-          stroke="var(--selection-stroke)"
-          strokeDasharray="8 6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          className="lasso-outline"
-        />
-      ) : (
-        <polyline
-          fill="var(--selection-fill)"
-          points={polygonPoints}
-          stroke="var(--selection-stroke)"
-          strokeDasharray="8 6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          className="lasso-outline"
-        />
-      )}
-
-      <circle
-        cx={activePoints[0]?.x}
-        cy={activePoints[0]?.y}
-        fill="var(--selection-dot)"
-        r={2.5}
-      />
-    </svg>
   );
 }
