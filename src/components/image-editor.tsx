@@ -17,6 +17,7 @@ import {
   Stack,
 } from "@phosphor-icons/react";
 import {
+  type CSSProperties,
   type ChangeEvent,
   type DragEvent as ReactDragEvent,
   type PointerEvent as ReactPointerEvent,
@@ -134,6 +135,90 @@ const MOMENTUM_MULTIPLIER = 26;
 const RESIZE_EDGE_THRESHOLD_MIN = 6;
 const RESIZE_EDGE_THRESHOLD_MAX = 14;
 const HISTORY_LIMIT = 50;
+const CANVA_THEME_STYLE: CSSProperties = {
+  "--font-ui": '"Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif',
+  "--shell-background":
+    "radial-gradient(circle at top, rgba(124, 58, 237, 0.16), transparent 28%), radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.14), transparent 36%), linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%)",
+  "--text-primary": "#1f2937",
+  "--text-secondary": "rgba(31, 41, 55, 0.82)",
+  "--text-muted": "rgba(55, 65, 81, 0.66)",
+  "--text-faint": "rgba(107, 114, 128, 0.74)",
+  "--divider": "rgba(148, 163, 184, 0.34)",
+  "--panel-bg": "rgba(255, 255, 255, 0.88)",
+  "--panel-border": "rgba(191, 219, 254, 0.95)",
+  "--panel-shadow":
+    "0 18px 44px rgba(81, 115, 179, 0.16), inset 0 1px 0 rgba(255,255,255,0.9)",
+  "--panel-blur": "18px",
+  "--panel-saturate": "145%",
+  "--panel-radius": "24px",
+  "--control-radius": "18px",
+  "--row-radius": "20px",
+  "--thumb-radius": "16px",
+  "--canvas-radius": "36px",
+  "--badge-radius": "999px",
+  "--control-bg": "rgba(255, 255, 255, 0.86)",
+  "--control-bg-hover": "rgba(255, 255, 255, 0.98)",
+  "--control-border": "rgba(191, 219, 254, 0.96)",
+  "--control-border-hover": "rgba(129, 140, 248, 0.48)",
+  "--control-text": "#334155",
+  "--control-bg-active":
+    "linear-gradient(135deg, rgba(124,58,237,0.16), rgba(34,211,238,0.18))",
+  "--control-border-active": "rgba(99, 102, 241, 0.52)",
+  "--control-ring": "0 0 0 1px rgba(99,102,241,0.16)",
+  "--control-bg-disabled": "rgba(241, 245, 249, 0.9)",
+  "--control-text-disabled": "rgba(148, 163, 184, 0.92)",
+  "--secondary-bg": "rgba(255,255,255,0.86)",
+  "--secondary-bg-hover": "rgba(255,255,255,0.98)",
+  "--secondary-border": "rgba(191, 219, 254, 0.96)",
+  "--secondary-text": "#334155",
+  "--layer-row-bg": "rgba(255,255,255,0.84)",
+  "--layer-row-bg-hover": "rgba(255,255,255,0.97)",
+  "--layer-row-border": "rgba(203, 213, 225, 0.82)",
+  "--layer-row-border-hover": "rgba(148, 163, 184, 0.72)",
+  "--layer-row-bg-selected":
+    "linear-gradient(135deg, rgba(124,58,237,0.14), rgba(34,211,238,0.14))",
+  "--layer-row-border-selected": "rgba(99, 102, 241, 0.46)",
+  "--layer-row-shadow-selected": "0 0 0 1px rgba(99,102,241,0.12)",
+  "--layer-rail": "rgba(99,102,241,0.9)",
+  "--thumbnail-bg": "rgba(248,250,252,0.98)",
+  "--thumbnail-border": "rgba(191, 219, 254, 0.8)",
+  "--thumbnail-border-selected": "rgba(99,102,241,0.4)",
+  "--badge-bg": "rgba(124,58,237,0.12)",
+  "--badge-border": "rgba(99,102,241,0.24)",
+  "--badge-text": "#5b21b6",
+  "--menu-button-color": "rgba(71, 85, 105, 0.84)",
+  "--menu-item-hover-bg": "rgba(124,58,237,0.08)",
+  "--canvas-overlay":
+    "radial-gradient(circle at top, rgba(167, 139, 250, 0.18), transparent 42%), radial-gradient(circle at bottom, rgba(34, 211, 238, 0.14), transparent 34%)",
+  "--canvas-pattern-base": "rgba(255,255,255,0.74)",
+  "--canvas-pattern-line": "rgba(148,163,184,0.08)",
+  "--canvas-boundary": "rgba(191,219,254,0.88)",
+  "--canvas-drop-border": "rgba(99,102,241,0.48)",
+  "--canvas-drop-bg": "rgba(191,219,254,0.22)",
+  "--empty-card-bg": "rgba(255,255,255,0.92)",
+  "--empty-primary-bg":
+    "linear-gradient(135deg, rgba(124,58,237,0.96), rgba(34,211,238,0.9))",
+  "--empty-primary-border": "rgba(255,255,255,0.28)",
+  "--empty-primary-text": "#ffffff",
+  "--tip-bg": "rgba(248,250,252,0.92)",
+  "--tip-border": "rgba(191,219,254,0.9)",
+  "--tip-text": "rgba(71,85,105,0.82)",
+  "--toast-bg": "rgba(255,255,255,0.92)",
+  "--toast-border": "rgba(191,219,254,0.9)",
+  "--toast-text": "#334155",
+  "--selection-outline": "rgba(79, 70, 229, 0.9)",
+  "--selection-shadow":
+    "0 0 0 2px rgba(99,102,241,0.14), 0 12px 32px rgba(99,102,241,0.16)",
+  "--handle-fill": "rgba(255,255,255,1)",
+  "--handle-shadow":
+    "0 0 0 1px rgba(99,102,241,0.28), 0 0 18px rgba(99,102,241,0.18)",
+  "--selection-mask": "rgba(255,255,255,0.18)",
+  "--selection-fill": "rgba(124,58,237,0.08)",
+  "--selection-stroke": "rgba(79,70,229,0.88)",
+  "--selection-dot": "rgba(79,70,229,0.96)",
+  "--slider-track": "rgba(148,163,184,0.2)",
+  "--slider-accent": "rgba(79,70,229,0.96)",
+} as CSSProperties;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -220,12 +305,9 @@ const getToolbarButtonClass = ({
   isDisabled?: boolean;
 } = {}) =>
   [
-    "flex h-11 w-11 items-center justify-center rounded-xl border transition-all duration-150",
-    isDisabled
-      ? "cursor-not-allowed border-white/8 bg-white/[0.03] text-white/22"
-      : isActive
-        ? "border-sky-300/55 bg-sky-400/12 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.12)]"
-        : "border-white/12 bg-black/28 text-white/78 hover:border-white/20 hover:bg-white/[0.08] hover:text-white",
+    "theme-control-button flex h-11 w-11 items-center justify-center border transition-all duration-150",
+    isActive ? "is-active" : "",
+    isDisabled ? "is-disabled" : "",
   ].join(" ");
 
 const getSecondaryControlClass = ({
@@ -234,10 +316,8 @@ const getSecondaryControlClass = ({
   isDisabled?: boolean;
 } = {}) =>
   [
-    "flex h-10 items-center justify-center rounded-xl border px-3 text-[12px] font-medium transition-all duration-150",
-    isDisabled
-      ? "cursor-not-allowed border-white/8 bg-white/[0.03] text-white/24"
-      : "border-white/10 bg-black/24 text-white/78 hover:border-white/18 hover:bg-white/[0.08] hover:text-white",
+    "theme-secondary-button flex h-10 items-center justify-center border px-3 text-[12px] font-medium transition-all duration-150",
+    isDisabled ? "is-disabled" : "",
   ].join(" ");
 
 const distanceBetweenPoints = (start: Point, end: Point) =>
@@ -1478,7 +1558,10 @@ export function ImageEditor() {
   const canZoomIn = layers.length > 0 && zoom < ZOOM_MAX - 0.001;
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden text-white">
+    <div
+      className="editor-shell relative flex min-h-screen flex-col overflow-hidden"
+      style={CANVA_THEME_STYLE}
+    >
       <input
         ref={fileInputRef}
         accept="image/*"
@@ -1501,7 +1584,7 @@ export function ImageEditor() {
               <FolderSimplePlus size={19} weight="duotone" />
             </button>
 
-            <div className="mx-1 h-7 w-px bg-white/10" />
+            <div className="mx-1 h-7 w-px bg-[color:var(--divider)]" />
 
             <button
               aria-label="포인터 선택 도구"
@@ -1525,7 +1608,7 @@ export function ImageEditor() {
               <Lasso size={19} weight={activeTool === "lasso" ? "duotone" : "regular"} />
             </button>
 
-            <div className="mx-1 h-7 w-px bg-white/10" />
+            <div className="mx-1 h-7 w-px bg-[color:var(--divider)]" />
 
             <button
               aria-label="되돌리기"
@@ -1608,10 +1691,10 @@ export function ImageEditor() {
               >
                   <div className="mb-2 flex items-center justify-between px-2 pt-1">
                     <div>
-                      <p className="text-[11px] font-semibold tracking-[0.22em] text-white/44 uppercase">
+                      <p className="text-[11px] font-semibold tracking-[0.22em] text-[color:var(--text-faint)] uppercase">
                         Layers
                       </p>
-                      <h2 className="mt-1 text-[15px] font-semibold text-white">
+                      <h2 className="mt-1 text-[15px] font-semibold text-[color:var(--text-primary)]">
                         {layers.length === 0
                           ? "레이어 없음"
                           : `${layers.length} ${layers.length === 1 ? "layer" : "layers"}`}
@@ -1621,7 +1704,7 @@ export function ImageEditor() {
 
                   <div className="space-y-1.5">
                     {displayLayers.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/14 bg-black/20 px-4 py-8 text-center text-[13px] leading-6 text-white/58">
+                      <div className="theme-empty-layer-state rounded-2xl border border-dashed px-4 py-8 text-center text-[13px] leading-6">
                         아직 레이어가 없어요. 중앙 캔버스에서 이미지를 올리면 여기서 바로 관리할 수 있어요.
                       </div>
                     ) : (
@@ -1659,11 +1742,9 @@ export function ImageEditor() {
                             <div
                               draggable
                               className={[
-                                "group relative flex items-center gap-2 rounded-[16px] border px-2 py-2 transition-all duration-150",
-                                isSelected
-                                  ? "border-sky-300/40 bg-sky-400/[0.12] shadow-[0_0_0_1px_rgba(125,211,252,0.08)]"
-                                  : "border-white/10 bg-black/24 hover:border-white/18 hover:bg-white/[0.06]",
-                                isDragTarget ? "border-sky-300/55 bg-sky-400/[0.14]" : "",
+                                "theme-layer-row group relative flex items-center gap-2 border px-2 py-2 transition-all duration-150",
+                                isSelected ? "is-selected" : "",
+                                isDragTarget ? "is-drag-target" : "",
                                 draggedLayerId === layer.id ? "opacity-45" : "",
                               ].join(" ")}
                               onDragEnd={() => {
@@ -1679,8 +1760,8 @@ export function ImageEditor() {
                               }}
                             >
                               <span
-                                className={`absolute bottom-2 left-0.5 top-2 w-1 rounded-full transition ${
-                                  isSelected ? "bg-sky-300/80" : "bg-transparent"
+                                className={`theme-layer-rail absolute bottom-2 left-0.5 top-2 w-1 rounded-full transition ${
+                                  isSelected ? "is-visible" : ""
                                 }`}
                               />
 
@@ -1689,7 +1770,7 @@ export function ImageEditor() {
                                   aria-expanded={openLayerMenuId === layer.id}
                                   aria-haspopup="menu"
                                   aria-label={`${displayLayerName} 레이어 메뉴`}
-                                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-transparent text-white/60 transition hover:border-white/14 hover:bg-white/[0.06] hover:text-white"
+                                  className="theme-layer-menu-button flex h-10 w-10 items-center justify-center border transition"
                                   data-layer-menu-trigger="true"
                                   type="button"
                                   onClick={(event) => {
@@ -1713,7 +1794,7 @@ export function ImageEditor() {
                                     {["배경 제거", "배경 추출"].map((label) => (
                                       <button
                                         key={label}
-                                        className="flex h-9 w-full items-center rounded-[10px] px-3 text-left text-[12px] font-medium text-white/72 transition hover:bg-white/[0.06] hover:text-white"
+                                        className="theme-layer-menu-item flex h-9 w-full items-center rounded-[10px] px-3 text-left text-[12px] font-medium transition"
                                         role="menuitem"
                                         type="button"
                                         onClick={() => {
@@ -1738,10 +1819,8 @@ export function ImageEditor() {
                                 }}
                               >
                                 <div
-                                  className={`relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border bg-white/[0.05] ${
-                                    isSelected
-                                      ? "border-sky-300/50 shadow-[0_0_0_1px_rgba(125,211,252,0.12)]"
-                                      : "border-white/12"
+                                  className={`theme-layer-thumbnail relative flex h-11 w-11 items-center justify-center overflow-hidden border ${
+                                    isSelected ? "is-selected" : ""
                                   }`}
                                 >
                                   <img
@@ -1755,18 +1834,20 @@ export function ImageEditor() {
                                   <div className="flex items-center gap-2">
                                     <p
                                       className={`truncate text-[13px] font-semibold ${
-                                        isSelected ? "text-white" : "text-white/80"
+                                        isSelected
+                                          ? "text-[color:var(--text-primary)]"
+                                          : "text-[color:var(--text-secondary)]"
                                       }`}
                                     >
                                       {displayLayerName}
                                     </p>
                                     {isSelected ? (
-                                      <span className="rounded-full border border-sky-300/30 bg-sky-400/16 px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.12em] text-sky-100/88 uppercase">
+                                      <span className="theme-selected-badge rounded-full border px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.12em] uppercase">
                                         Selected
                                       </span>
                                     ) : null}
                                   </div>
-                                  <p className="mt-1 truncate text-[11px] text-white/56">
+                                  <p className="mt-1 truncate text-[11px] text-[color:var(--text-muted)]">
                                     Opacity {opacityPercent}%
                                   </p>
                                 </div>
@@ -1775,7 +1856,7 @@ export function ImageEditor() {
                               <div className="flex items-center gap-1.5">
                                 <button
                                   aria-label={isExpanded ? "투명도 패널 닫기" : "투명도 패널 열기"}
-                                  className="flex h-9 min-w-[58px] items-center justify-center gap-1 rounded-xl border border-white/10 bg-black/16 px-2 text-[11px] font-semibold text-white/72 transition hover:border-white/16 hover:bg-white/[0.06] hover:text-white"
+                                  className="theme-secondary-button flex h-9 min-w-[58px] items-center justify-center gap-1 border px-2 text-[11px] font-semibold transition"
                                   type="button"
                                   onClick={() => toggleLayerOpacityPanel(layer.id)}
                                 >
@@ -1791,7 +1872,7 @@ export function ImageEditor() {
 
                                 <button
                                   aria-label={layer.visible ? "레이어 숨기기" : "레이어 보이기"}
-                                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/16 text-white/78 transition hover:border-white/16 hover:bg-white/[0.06] hover:text-white"
+                                  className="theme-secondary-button flex h-10 w-10 items-center justify-center border transition"
                                   type="button"
                                   onClick={() => setLayerVisibility(layer.id, !layer.visible)}
                                 >
@@ -1805,14 +1886,14 @@ export function ImageEditor() {
                             </div>
 
                             {isExpanded ? (
-                              <div className="ml-8 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                                <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-white/48">
+                              <div className="theme-range-panel ml-8 rounded-2xl border px-4 py-3">
+                                <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--text-faint)]">
                                   <span>Opacity</span>
-                                  <span className="text-white/70">{opacityPercent}%</span>
+                                  <span className="text-[color:var(--text-secondary)]">{opacityPercent}%</span>
                                 </div>
                                 <input
                                   aria-label={`${layer.name} 투명도 조절`}
-                                  className="layer-slider h-2 w-full cursor-pointer appearance-none rounded-full bg-white/14"
+                                  className="layer-slider h-2 w-full cursor-pointer appearance-none rounded-full bg-[var(--slider-track)]"
                                   max={100}
                                   min={0}
                                   step={1}
@@ -1849,7 +1930,7 @@ export function ImageEditor() {
 
       {transientLabel ? (
         <div className="pointer-events-none fixed top-20 left-1/2 z-20 -translate-x-1/2">
-          <div className="rounded-full border border-white/14 bg-black/50 px-3.5 py-1.5 text-[11px] font-medium tracking-[0.12em] text-white/78 uppercase backdrop-blur-md">
+          <div className="theme-toast rounded-full border px-3.5 py-1.5 text-[11px] font-medium tracking-[0.12em] uppercase backdrop-blur-md">
             {transientLabel}
           </div>
         </div>
@@ -1884,35 +1965,30 @@ export function ImageEditor() {
           }}
           onWheel={handleWheelZoom}
         >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.08),transparent_42%),radial-gradient(circle_at_bottom,rgba(148,163,184,0.06),transparent_34%)]" />
-
           <div
-            className={`pointer-events-none absolute inset-4 rounded-[28px] border transition-all duration-200 ${
-              isCanvasDropTarget
-                ? "border-sky-300/45 bg-sky-400/[0.08] shadow-[0_0_0_1px_rgba(125,211,252,0.08)]"
-                : "border-white/8 bg-transparent"
-            }`}
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "var(--canvas-overlay)" }}
           />
 
           {layers.length === 0 ? (
             <div className="pointer-events-auto relative z-10 w-full max-w-[520px]">
               <div
-                className={`soft-panel rounded-[28px] px-8 py-10 text-center transition-all duration-200 ${
-                  isCanvasDropTarget ? "border-sky-300/45 bg-sky-400/[0.08]" : ""
+                className={`soft-panel theme-empty-card rounded-[28px] px-8 py-10 text-center transition-all duration-200 ${
+                  isCanvasDropTarget ? "is-drop-target" : ""
                 }`}
               >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/12 bg-white/[0.06] text-white/88">
+                <div className="theme-empty-icon mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border">
                   <FolderSimplePlus size={24} weight="duotone" />
                 </div>
-                <h1 className="mt-5 text-[28px] font-semibold tracking-[-0.03em] text-white">
+                <h1 className="mt-5 text-[28px] font-semibold tracking-[-0.03em] text-[color:var(--text-primary)]">
                   이미지를 불러와 시작하세요
                 </h1>
-                <p className="mx-auto mt-3 max-w-[360px] text-[15px] leading-7 text-white/68">
+                <p className="mx-auto mt-3 max-w-[360px] text-[15px] leading-7 text-[color:var(--text-muted)]">
                   드래그 앤 드롭 또는 파일 선택으로 레이어를 추가하고, 바로 이동·선택·리사이즈를 시작할 수 있어요.
                 </p>
                 <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <button
-                    className="flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-2xl border border-sky-300/35 bg-sky-400/[0.16] px-5 text-[14px] font-semibold text-white transition hover:border-sky-200/55 hover:bg-sky-400/[0.22]"
+                    className="theme-empty-primary-button flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-2xl border px-5 text-[14px] font-semibold transition"
                     type="button"
                     onClick={openFilePicker}
                   >
@@ -1920,8 +1996,8 @@ export function ImageEditor() {
                     이미지 불러오기
                   </button>
                 </div>
-                <div className="mt-6 rounded-2xl border border-white/10 bg-black/18 px-4 py-3 text-[12px] leading-6 text-white/54">
-                  팁: 이미지를 올린 뒤엔 <span className="text-white/82">Undo / Redo</span>, <span className="text-white/82">줌 - / +</span>, <span className="text-white/82">100%</span>으로 바로 작업 흐름을 제어할 수 있어요.
+                <div className="theme-tip mt-6 rounded-2xl border px-4 py-3 text-[12px] leading-6">
+                  팁: 이미지를 올린 뒤엔 <span className="text-[color:var(--text-secondary)]">Undo / Redo</span>, <span className="text-[color:var(--text-secondary)]">줌 - / +</span>, <span className="text-[color:var(--text-secondary)]">100%</span>으로 바로 작업 흐름을 제어할 수 있어요.
                 </div>
               </div>
             </div>
@@ -2002,10 +2078,8 @@ export function ImageEditor() {
                     >
                       <span
                         className={[
-                          "pointer-events-none absolute inset-0 border transition duration-150",
-                          isSelected
-                            ? "border-sky-300/85 shadow-[0_0_0_2px_rgba(125,211,252,0.22),0_10px_35px_rgba(14,165,233,0.14)]"
-                            : "border-white/0 group-hover:border-white/12",
+                          "theme-selected-outline pointer-events-none absolute inset-0 border transition duration-150",
+                          isSelected ? "is-selected" : "",
                         ].join(" ")}
                       />
 
@@ -2123,7 +2197,11 @@ function ResizeHandles({ layer, onHandlePointerDown }: ResizeHandlesProps) {
           onPointerDown={(event) => onHandlePointerDown(event, layer, handle)}
         >
           <span
-            className={`absolute ${indicatorClassName} bg-sky-100/95 shadow-[0_0_0_1px_rgba(2,6,23,0.4),0_0_18px_rgba(56,189,248,0.35)] transition-opacity duration-150`}
+            className={`absolute ${indicatorClassName} transition-opacity duration-150`}
+            style={{
+              background: "var(--handle-fill)",
+              boxShadow: "var(--handle-shadow)",
+            }}
           />
         </span>
       ))}
@@ -2171,7 +2249,7 @@ function LayerSelectionOverlay({
 
       {hasClosedSelection ? (
         <rect
-          fill="rgba(4, 6, 10, 0.28)"
+          fill="var(--selection-mask)"
           height={height}
           mask={`url(#${maskId})`}
           width={width}
@@ -2182,9 +2260,9 @@ function LayerSelectionOverlay({
 
       {hasClosedSelection ? (
         <polygon
-          fill="rgba(191, 219, 254, 0.05)"
+          fill="var(--selection-fill)"
           points={polygonPoints}
-          stroke="rgba(191, 219, 254, 0.96)"
+          stroke="var(--selection-stroke)"
           strokeDasharray="8 6"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -2193,9 +2271,9 @@ function LayerSelectionOverlay({
         />
       ) : (
         <polyline
-          fill="rgba(125, 211, 252, 0.06)"
+          fill="var(--selection-fill)"
           points={polygonPoints}
-          stroke="rgba(191, 219, 254, 0.92)"
+          stroke="var(--selection-stroke)"
           strokeDasharray="8 6"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -2207,7 +2285,7 @@ function LayerSelectionOverlay({
       <circle
         cx={activePoints[0]?.x}
         cy={activePoints[0]?.y}
-        fill="rgba(255, 255, 255, 0.96)"
+        fill="var(--selection-dot)"
         r={2.5}
       />
     </svg>

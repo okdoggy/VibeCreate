@@ -24,10 +24,7 @@ body {
 body {
   margin: 0;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top, rgba(96, 165, 250, 0.1), transparent 32%),
-    radial-gradient(circle at bottom, rgba(148, 163, 184, 0.06), transparent 36%),
-    linear-gradient(180deg, #090a11 0%, #05060b 100%);
+  background: #eef5ff;
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
@@ -47,33 +44,39 @@ img {
   -webkit-user-drag: none;
 }
 
+.editor-shell {
+  background: var(--shell-background);
+  color: var(--text-primary);
+  font-family: var(--font-ui), var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
 .soft-panel {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(7, 10, 16, 0.72);
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px) saturate(128%);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
+  border-radius: var(--panel-radius) !important;
+  color: var(--text-primary);
 }
 
 .editor-grid {
-  background-color: rgba(255, 255, 255, 0.018);
+  background-color: var(--canvas-pattern-base);
   background-image:
     linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.008) 25%,
+      var(--canvas-pattern-line) 25%,
       transparent 25%,
       transparent 75%,
-      rgba(255, 255, 255, 0.008) 75%,
-      rgba(255, 255, 255, 0.008)
+      var(--canvas-pattern-line) 75%,
+      var(--canvas-pattern-line)
     ),
     linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.008) 25%,
+      var(--canvas-pattern-line) 25%,
       transparent 25%,
       transparent 75%,
-      rgba(255, 255, 255, 0.008) 75%,
-      rgba(255, 255, 255, 0.008)
+      var(--canvas-pattern-line) 75%,
+      var(--canvas-pattern-line)
     );
   background-position: 0 0, 32px 32px;
   background-size: 64px 64px;
@@ -83,10 +86,195 @@ img {
   touch-action: none;
 }
 
+.theme-control-button,
+.theme-secondary-button,
+.theme-layer-menu-button,
+.theme-empty-primary-button,
+.theme-layer-row,
+.theme-layer-thumbnail,
+.theme-selected-badge,
+.theme-range-panel,
+.theme-toast,
+.theme-empty-card,
+.theme-empty-icon,
+.theme-tip {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+  transition-duration: 150ms;
+}
+
+.theme-control-button {
+  border-radius: var(--control-radius) !important;
+  border-color: var(--control-border);
+  background: var(--control-bg);
+  color: var(--control-text);
+}
+
+.theme-control-button:hover {
+  border-color: var(--control-border-hover);
+  background: var(--control-bg-hover);
+}
+
+.theme-control-button.is-active {
+  border-color: var(--control-border-active);
+  background: var(--control-bg-active);
+  box-shadow: var(--control-ring);
+  color: var(--text-primary);
+}
+
+.theme-control-button.is-disabled,
+.theme-secondary-button.is-disabled {
+  cursor: not-allowed;
+  background: var(--control-bg-disabled);
+  border-color: var(--control-border);
+  color: var(--control-text-disabled);
+  box-shadow: none;
+}
+
+.theme-secondary-button {
+  border-radius: var(--control-radius) !important;
+  border-color: var(--secondary-border);
+  background: var(--secondary-bg);
+  color: var(--secondary-text);
+}
+
+.theme-secondary-button:hover {
+  border-color: var(--control-border-hover);
+  background: var(--secondary-bg-hover);
+}
+
+.theme-empty-layer-state {
+  border-color: var(--panel-border);
+  background: var(--secondary-bg);
+  color: var(--text-muted);
+}
+
+.theme-layer-row {
+  border-radius: var(--row-radius) !important;
+  border-color: var(--layer-row-border);
+  background: var(--layer-row-bg);
+}
+
+.theme-layer-row:hover {
+  border-color: var(--layer-row-border-hover);
+  background: var(--layer-row-bg-hover);
+}
+
+.theme-layer-row.is-selected {
+  border-color: var(--layer-row-border-selected);
+  background: var(--layer-row-bg-selected);
+  box-shadow: var(--layer-row-shadow-selected);
+}
+
+.theme-layer-row.is-drag-target {
+  border-color: var(--control-border-active);
+  background: var(--control-bg-active);
+}
+
+.theme-layer-rail {
+  background: transparent;
+}
+
+.theme-layer-rail.is-visible {
+  background: var(--layer-rail);
+}
+
+.theme-layer-menu-button {
+  border-radius: var(--control-radius) !important;
+  border-color: transparent;
+  background: transparent;
+  color: var(--menu-button-color);
+}
+
+.theme-layer-menu-button:hover {
+  border-color: var(--control-border-hover);
+  background: var(--control-bg-hover);
+  color: var(--text-primary);
+}
+
+.theme-layer-menu-item {
+  color: var(--text-secondary);
+}
+
+.theme-layer-menu-item:hover {
+  background: var(--menu-item-hover-bg);
+  color: var(--text-primary);
+}
+
+.theme-layer-thumbnail {
+  border-radius: var(--thumb-radius) !important;
+  border-color: var(--thumbnail-border);
+  background: var(--thumbnail-bg);
+}
+
+.theme-layer-thumbnail.is-selected {
+  border-color: var(--thumbnail-border-selected);
+  box-shadow: var(--control-ring);
+}
+
+.theme-selected-badge {
+  border-radius: var(--badge-radius) !important;
+  border-color: var(--badge-border);
+  background: var(--badge-bg);
+  color: var(--badge-text);
+}
+
+.theme-range-panel {
+  border-radius: calc(var(--row-radius) + 2px) !important;
+  border-color: var(--secondary-border);
+  background: var(--secondary-bg);
+}
+
+.theme-toast {
+  border-color: var(--toast-border);
+  background: var(--toast-bg);
+  color: var(--toast-text);
+}
+
+.theme-empty-card {
+  border-radius: calc(var(--canvas-radius) - 4px) !important;
+  background: var(--empty-card-bg);
+}
+
+.theme-empty-card.is-drop-target {
+  border-color: var(--canvas-drop-border);
+  background: color-mix(in srgb, var(--empty-card-bg) 80%, var(--canvas-drop-bg));
+}
+
+.theme-empty-icon {
+  border-color: var(--secondary-border);
+  background: var(--secondary-bg);
+  color: var(--text-secondary);
+}
+
+.theme-empty-primary-button {
+  border-color: var(--empty-primary-border);
+  background: var(--empty-primary-bg);
+  color: var(--empty-primary-text);
+}
+
+.theme-empty-primary-button:hover {
+  filter: brightness(1.04);
+}
+
+.theme-tip {
+  border-color: var(--tip-border);
+  background: var(--tip-bg);
+  color: var(--tip-text);
+}
+
+.theme-selected-outline {
+  border-color: transparent;
+}
+
+.theme-selected-outline.is-selected {
+  border-color: var(--selection-outline);
+  box-shadow: var(--selection-shadow);
+}
+
 .lasso-outline {
   stroke-dasharray: 8 6;
 }
 
 .layer-slider {
-  accent-color: rgba(186, 230, 253, 0.98);
+  accent-color: var(--slider-accent);
 }
